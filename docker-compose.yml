@@ -5,23 +5,30 @@ services:
     restart: always
     environment:
       MYSQL_DATABASE: user_mgmt
-      MYSQL_USER: root
+      MYSQL_USER: abir
       MYSQL_PASSWORD: root_password
       MYSQL_ROOT_PASSWORD: rootpassword
     ports:
       - "3306:3306"
     volumes:
       - db_data:/var/lib/mysql
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   app:
     build: .
     ports:
       - "5000:5000"
     depends_on:
-      - mysql_db
+      mysql_db:
+        condition: service_healthy
     environment:
-      DATABASE_URL: mysql://root:root_password@mysql_db:3306/user_mgmt
-      JWT_SECRET: my_jwt_sceret
+      DATABASE_URL: mysql://abir:root_password@mysql_db:3306/user_mgmt
+      JWT_SECRET: my_jwt_secret
+    restart: unless-stopped
 
 volumes:
   db_data:
